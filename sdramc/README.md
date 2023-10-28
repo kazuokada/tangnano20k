@@ -33,7 +33,7 @@ https://www.micron.com/support#SupportDocumentationandDownloads
 DRAMのカテゴリからSDRAMを選択  
 Simulation MdelsのカテゴリからVerilogを選択  
 ここからx32のモデルをダウンロード出来ればよいのですが、  
-Verilog(ZIP) - xxxxx  
+`Verilog(ZIP) - xxxxx`  
 と書いたものが沢山あって、どこからダウンロードすれば良いか分かりません。  
 適当にダウンロードして、zip内のverilogモデルを見て判断する方法しか分かりませんでした。  
 なんどか、ダウンロードして次のファイル名のものがx32品でした。  
@@ -73,7 +73,7 @@ Verilog(ZIP) - xxxxx
 TangNano20Kに内蔵されているSDRAMのACスペックを記載したドキュメントを見つけることが出来なかった為、Micron社の`MT48LC2M32B2 – 512K x 32 x 4 Banks`を参考にしました。  
 当初、166MHz動作なので、tCK=6ns以下のSpeedGradeの`-6`で動作させましたが、メモリ化けが発生したので、`-7`のパラメータを利用しています。  
 追い込めば、少し改善出来るかもしれませんが、現状は`-7`パラメータをそのまま利用しています。  
-`-7`は143MHz動作なので、MicornのメモリだとSPECオーバーなのですが、GOWINの内蔵SDRAMも同等なのかは不明です。  
+`-7`は143MHz動作なので、MicornのメモリだとSPECオーバーなのですが、GOWINの内蔵SDRAMも同様にSPECオーバーなのかは不明です。とりあえずメモリ化けすることなく動作はしています。  
 
 ***
 # 参考ドキュメント
