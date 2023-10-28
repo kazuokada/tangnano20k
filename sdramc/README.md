@@ -50,7 +50,7 @@ Simulation MdelsのカテゴリからVerilogを選択
 | clk       | I   | -      | main clock
 | clk_sdram | I   | -      | main clock(*1)
 | clk_capdq | I   | -      | DQ capture clock(*2)
-|**commnad i/f**||
+|**command i/f**||
 |cmd_en     | I   | P      | request for transaction
 |cmd        | I   | -      | 0: Read, 1:Write
 |addr[22:0] | I   | -      | address in byte
