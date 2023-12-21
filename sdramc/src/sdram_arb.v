@@ -41,6 +41,7 @@ module sdram_arb
     input wire [31:0]   wdata_s1,
     input wire [3:0]    mask_s1,
     output reg          cmd_ready_s1,
+    output reg          cmd_ready_s1_clone,
 
     input wire          cmd_s2,
     input wire          cmd_en_s2,
@@ -292,6 +293,17 @@ always@(posedge sdramclk or posedge rst_sdramclk)
 
 always@(posedge sdramclk or posedge rst_sdramclk)
     if(rst_sdramclk)
+        cmd_ready_s1_clone <= 1'b0;
+    else if(cmd_ready_s1_clone)
+        cmd_ready_s1_clone <= 1'b0;
+    else if(S1ack&(sel_ch==2'b01)&sdram_ack)
+        cmd_ready_s1_clone <= 1'b1;
+    else if(S0ack&sel_write&(w_sel_ch==2'b01))
+        cmd_ready_s1_clone <= 1'b1;
+
+
+always@(posedge sdramclk or posedge rst_sdramclk)
+    if(rst_sdramclk)
         cmd_ready_s2 <= 1'b0;
     else if(cmd_ready_s2)
         cmd_ready_s2 <= 1'b0;
@@ -337,11 +349,25 @@ assign sdram_mask = wfifo_mask[wfifo_rpt[3:0]];
 // ----------------------------
 // rvalid_s*
 // ----------------------------
+reg rvalid_sx_clone0;
+reg rvalid_sx_clone1;
+
 always@(posedge sdramclk or posedge rst_sdramclk)
     if(rst_sdramclk)
         rvalid_sx <= 1'b0;
     else
         rvalid_sx <= sdram_rvalid;
+
+always@(posedge sdramclk or posedge rst_sdramclk)
+    if(rst_sdramclk)
+        rvalid_sx_clone0 <= 1'b0;
+    else
+        rvalid_sx_clone0 <= sdram_rvalid;
+always@(posedge sdramclk or posedge rst_sdramclk)
+    if(rst_sdramclk)
+        rvalid_sx_clone1 <= 1'b0;
+    else
+        rvalid_sx_clone1 <= sdram_rvalid;
 
 always@(posedge sdramclk)
     if(sdram_rvalid&(~rvalid_sx))
@@ -352,8 +378,8 @@ assign w_sel_ch_read = (sdram_rvalid&(~rvalid_sx)) ? sel_ch_hold:
                         sel_ch_read;
                         
 assign rvalid_s0 = (w_sel_ch_read==2'b00)&rvalid_sx;
-assign rvalid_s1 = (w_sel_ch_read==2'b01)&rvalid_sx;
-assign rvalid_s2 = (w_sel_ch_read==2'b10)&rvalid_sx;
+assign rvalid_s1 = (w_sel_ch_read==2'b01)&rvalid_sx_clone0;
+assign rvalid_s2 = (w_sel_ch_read==2'b10)&rvalid_sx_clone1;
 
 always@(posedge sdramclk)
     if(sdram_rvalid)
