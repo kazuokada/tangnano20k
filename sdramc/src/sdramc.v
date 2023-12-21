@@ -48,7 +48,8 @@
 //
 module sdramc
 #(
-    parameter         FREQ = 166_000_000,  
+    parameter         FREQ = 166_000_000,
+    parameter         PHASE_SHIFT_CLKIN=0,    // when clk_capdq is not the same as clk_capdq.
     parameter         DATA_WIDTH = 32,
     parameter         ROW_WIDTH = 11,  // 2K rows
     parameter         COL_WIDTH = 8,   // 256 words per row (1Kbytes)
@@ -71,8 +72,11 @@ module sdramc
     parameter [4:0]   T_MRD= 5'd2,     // 2 cycles, mode register set
     parameter [4:0]   T_RP = 5'd4,     // 20ns, precharge to active
     parameter [4:0]   T_RCD= 5'd4,     // 20ns, active to r/w
+    //parameter [4:0]   T_RP = 5'd5,     // 20ns, precharge to active
+    //parameter [4:0]   T_RCD= 5'd5,     // 20ns, active to r/w
     parameter [4:0]   T_RC = 5'd12,    // 70ns, ref/active to ref/active
     parameter [4:0]   T_RAS = 5'd7     // 42ns, active to precharge
+    //parameter [4:0]   T_RAS = 5'd8     // 42ns, active to precharge
 )
 (
     // SDRAM side interface
@@ -177,6 +181,7 @@ reg         get_dq_en;
 reg         get_dq_en2;
 reg         get_dq_en3;
 reg [31:0]  get_dq;
+reg [31:0]  get_dq2;
 
 reg refresh_en;
 reg refresh_ack;
@@ -486,6 +491,7 @@ always @(posedge clk)
         get_dq_en3 <= 1'b0;
     else
         get_dq_en3 <= get_dq_en2;
+/*
 generate
 if(FREQ > GET_DQ_1CYCDLY) begin
 always @(posedge clk)
@@ -503,7 +509,13 @@ always @(posedge clk)
 end
 
 endgenerate
-
+*/
+always @(posedge clk)
+    if(~resetn)
+        rd_data_valid <= 1'b0;
+    else
+        rd_data_valid <= get_dq_en3;
+        
 always @(posedge clk)
     if(~resetn)
         get_dq_cnt <= 4'h0;
@@ -515,6 +527,7 @@ always @(posedge clk)
 // ---------------------------------------
 // rd_data
 // ---------------------------------------
+/*
 generate
 if(FREQ > GET_DQ_1CYCDLY) begin
     //always @(posedge clk_sdram)
@@ -534,6 +547,26 @@ else begin
         if(get_dq_en2)
             rd_data <= get_dq;
 end
+endgenerate
+*/
+always @(posedge clk_capdq)
+    if(get_dq_en2)
+        get_dq <= dq_in;
+generate
+    if(PHASE_SHIFT_CLKIN==1) begin
+        always @(posedge clk)
+            if(get_dq_en2)
+                get_dq2 <= get_dq;
+        always @(posedge clk)
+            if(get_dq_en3)
+                rd_data <= get_dq2;
+
+    end
+    else begin
+        always @(posedge clk)
+            if(get_dq_en3)
+                rd_data <= get_dq;
+    end
 endgenerate
 
 // ---------------------------------------
